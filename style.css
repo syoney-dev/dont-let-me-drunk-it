@@ -1,0 +1,156 @@
+/* ティアごとにインターフェイスが豪華になる */
+:root {
+  --page: #181818;
+  --win: #000000;
+  --text: #e0e0e0;
+  --muted: #909090;
+  --bd: #9a9a9a;
+  --bdw: 2px;
+  --bds: solid;
+  --radius: 0px;
+  --accent: #e0e0e0;
+  --gem: transparent;
+  --gem2: transparent;
+  --page-img: none;
+}
+.tier-1 { --page: #0c0c18; --text: #fff; --muted: #a0a0b0; --bd: #ffffff; --bdw: 3px; --radius: 2px; --accent: #fff; }
+.tier-2 { --page: #000020; --win: #000050; --text: #fff; --muted: #a0a8d0; --bd: #ffffff; --bdw: 3px; --radius: 6px; --accent: #f8f040; }
+.tier-3 { --page: #101420; --win: #000050; --text: #fff; --muted: #b0b8d8; --bd: #f8d830; --bdw: 5px; --bds: double; --radius: 6px; --accent: #f8d830; --gem: #f8d830; }
+.tier-4 {
+  --page: #2a0808; --win: #00004a; --text: #fff; --muted: #c0b8d8; --bd: #f8d830; --bdw: 5px; --bds: double; --radius: 8px;
+  --accent: #f8d830; --gem: #e02040; --gem2: #f8d830;
+  --page-img: repeating-linear-gradient(0deg, #3a1010 0 6px, #200404 6px 8px);
+}
+.tier-5 {
+  --page: #12002a; --win: #1a0050; --text: #fff8e0; --muted: #d8c8ff; --bd: #f8d830; --bdw: 6px; --bds: double; --radius: 10px;
+  --accent: #fff060; --gem: #40f0ff; --gem2: #f8d830;
+  --page-img: radial-gradient(#ffffff55 1px, transparent 1.5px) 0 0 / 24px 24px, radial-gradient(#f8d83055 1px, transparent 1.5px) 12px 12px / 24px 24px;
+}
+
+* { box-sizing: border-box; }
+html, body { margin: 0; }
+body {
+  background: var(--page);
+  background-image: var(--page-img);
+  color: var(--text);
+  font-family: "DotGothic16", "MS Gothic", monospace;
+  font-size: 16px;
+  line-height: 1.6;
+  -webkit-text-size-adjust: 100%;
+  padding-bottom: env(safe-area-inset-bottom);
+}
+canvas { image-rendering: pixelated; image-rendering: crisp-edges; display: block; }
+button, input, textarea, select { font: inherit; color: inherit; }
+
+.win {
+  position: relative;
+  background: var(--win);
+  border: var(--bdw) var(--bds) var(--bd);
+  border-radius: var(--radius);
+  padding: 10px 12px;
+}
+/* 四すみの かざり（14日〜） */
+.win::after {
+  content: "";
+  position: absolute;
+  inset: -7px;
+  pointer-events: none;
+  background:
+    linear-gradient(var(--gem), var(--gem)) top left / 8px 8px no-repeat,
+    linear-gradient(var(--gem), var(--gem)) top right / 8px 8px no-repeat,
+    linear-gradient(var(--gem), var(--gem)) bottom left / 8px 8px no-repeat,
+    linear-gradient(var(--gem), var(--gem)) bottom right / 8px 8px no-repeat;
+}
+.tier-4 .win::before, .tier-5 .win::before {
+  content: "";
+  position: absolute;
+  left: 50%; top: -9px;
+  width: 10px; height: 10px;
+  margin-left: -5px;
+  background: var(--gem2);
+  transform: rotate(45deg);
+  pointer-events: none;
+}
+.tier-5 .win { animation: shine 1s steps(2) infinite; }
+@keyframes shine { 50% { border-color: #fff8c0; } }
+
+/* ---- 上部 HUD ---- */
+.hud {
+  position: sticky;
+  top: 0;
+  z-index: 10;
+  display: grid;
+  grid-template-columns: 72px 1fr 72px;
+  gap: 8px;
+  padding: calc(8px + env(safe-area-inset-top)) 12px 8px;
+  background: var(--page);
+  background-image: var(--page-img);
+}
+.hud .win { padding: 4px; }
+.wipe { align-self: start; aspect-ratio: 1; overflow: hidden; border-radius: 50%; }
+.tier-0 .wipe, .tier-1 .wipe { border-radius: var(--radius); }
+.wipe canvas { width: 100%; height: 100%; border-radius: inherit; }
+.battle canvas { width: 100%; height: auto; aspect-ratio: 2 / 1; }
+.battle-msg { margin: 2px 0 0; font-size: 11px; line-height: 1.3; min-height: 2.6em; }
+.counter { align-self: start; text-align: center; line-height: 1.1; padding: 6px 2px; }
+.counter-label { font-size: 11px; color: var(--muted); }
+.counter-num { font-size: 26px; white-space: nowrap; color: var(--accent); margin: 2px 0; }
+.counter-num small { font-size: 11px; margin-left: 1px; }
+.counter-num.long { font-size: 19px; }
+.counter-rank { font-size: 10px; }
+
+/* ---- 本文 ---- */
+main { display: flex; flex-direction: column; gap: 18px; padding: 10px 16px 24px; max-width: 560px; margin: 0 auto; }
+.win-title { margin: 0 0 8px; font-size: 16px; font-weight: normal; color: var(--accent); }
+.cmds { display: flex; flex-direction: column; gap: 4px; margin-bottom: 10px; }
+.cmd {
+  background: none; border: 0; text-align: left; padding: 6px 4px 6px 24px; position: relative; cursor: pointer;
+}
+.cmd::before { content: "▶"; position: absolute; left: 4px; visibility: hidden; }
+.cmd[aria-checked="true"]::before { visibility: visible; animation: blink 1s steps(1) infinite; }
+.cmd[aria-checked="true"][data-status="sober"] { color: var(--accent); }
+.cmd[aria-checked="true"][data-status="drank"] { color: #ff7070; }
+@keyframes blink { 50% { opacity: 0; } }
+.diary-label { font-size: 13px; color: var(--muted); }
+textarea, input, select {
+  width: 100%;
+  background: #000;
+  border: 2px solid var(--bd);
+  border-radius: 0;
+  padding: 8px;
+  resize: none;
+}
+textarea:focus, input:focus, select:focus { outline: 2px solid var(--accent); outline-offset: 1px; }
+.row { display: flex; justify-content: space-between; align-items: center; gap: 8px; margin-top: 8px; }
+.muted { color: var(--muted); font-size: 13px; }
+.btn {
+  background: var(--win);
+  border: 2px solid var(--bd);
+  border-radius: var(--radius);
+  padding: 6px 14px;
+  cursor: pointer;
+}
+.btn:active { transform: translateY(1px); }
+.btn.danger { border-color: #c04040; color: #ff8080; }
+.footer-row { justify-content: center; }
+
+.msg-win { min-height: 4.6em; }
+.msg { margin: 0; white-space: pre-wrap; }
+
+.status { display: grid; grid-template-columns: 5em 1fr; margin: 0; row-gap: 2px; }
+.status dt { color: var(--muted); }
+.status dd { margin: 0; }
+
+.log { list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column; gap: 6px; }
+.log li { display: grid; grid-template-columns: 4.5em 1.4em 1fr; gap: 4px; cursor: pointer; }
+.log .ok { color: var(--accent); }
+.log .ng { color: #ff7070; }
+.log .note { overflow-wrap: anywhere; }
+.log .empty { display: block; color: var(--muted); cursor: default; }
+
+dialog.win { color: var(--text); width: min(92vw, 420px); }
+dialog::backdrop { background: #000a; }
+.field { display: block; margin: 0 0 12px; border: 0; padding: 0; }
+.field legend { padding: 0; }
+.field input[type="radio"] { width: auto; margin-right: 4px; }
+.field label { margin-right: 16px; }

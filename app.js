@@ -192,18 +192,17 @@ let step = 0;
 function battleScript(name, T, mx) {
   const m = T.monster;
   const near = mx - 22, mid = Math.round((6 + near) / 2);
-  // [主人公x, ポーズ, 主人公点滅, モンスターずらし, モンスター点滅, モンスター表示, 斬撃, メッセージ]
+  // [コマ数, 主人公x, ポーズ, 主人公点滅, モンスターずらし, モンスター点滅, モンスター表示, 斬撃, けむり, メッセージ]
   return [
-    [6, "idle",   0, 0,   0, 1, 0, `${m}が あらわれた！`],
-    [6, "idle",   0, 0,   0, 1, 0, `${m}が あらわれた！`],
-    [mid, "walk",   0, 0,   0, 1, 0, `${name}の こうげき！`],
-    [near, "attack", 0, 0,   1, 1, 1, `${name}の こうげき！`],
-    [mid, "idle",   0, 2,   0, 1, 0, `${m}に ダメージを あたえた！`],
-    [6, "idle",   0, -10, 0, 1, 0, `${m}は ${T.lure}`],
-    [6, "idle",   1, 0,   0, 1, 0, `しかし ${name}は きっぱり ことわった！`],
-    [near, "attack", 0, 0,   1, 1, 1, `${name}の かいしんの いちげき！`],
-    [near, "idle",   0, 0,   0, 0, 0, `${m}を たおした！`],
-    [6, "idle",   0, 0,   0, 0, 0, `${m}を たおした！`],
+    [3, 6,    "idle",   0, 0,   0, 1, 0, 0, `${m}が あらわれた！`],
+    [2, mid,  "walk",   0, 0,   0, 1, 0, 0, `${name}の こうげき！`],
+    [2, near, "attack", 0, 0,   1, 1, 1, 0, `${name}の こうげき！`],
+    [2, mid,  "idle",   0, 2,   0, 1, 0, 0, `${m}に ダメージを あたえた！`],
+    [3, 6,    "idle",   0, -10, 0, 1, 0, 0, `${m}は ${T.lure}`],
+    [3, 6,    "idle",   1, 0,   0, 1, 0, 0, `しかし ${name}は きっぱり ことわった！`],
+    [2, near, "attack", 0, 0,   1, 1, 1, 0, `${name}の かいしんの いちげき！`],
+    [2, near, "idle",   0, 0,   0, 0, 0, 1, `${m}を たおした！`],
+    [3, 6,    "idle",   0, 0,   0, 0, 0, 0, `${m}を たおした！`],
   ];
 }
 
@@ -214,19 +213,26 @@ function tick() {
   const f = step % 2;
   const M = MONSTERS[t];
   const baseX = BW - 4 - M.w;
-  const [hx, pose, hFlash, mShift, mFlash, mShow, slash, text] = battleScript(state.settings.name, T, baseX)[step];
+  const script = battleScript(state.settings.name, T, baseX);
+  const total = script.reduce((n, s) => n + s[0], 0);
+  // いまの場面と、その場面の何コマ目か
+  let i = 0, sub = step % total;
+  while (sub >= script[i][0]) sub -= script[i++][0];
+  const [, hx, pose0, hFlash, mShift, mFlash, mShow, slash, smoke, text] = script[i];
   const mx = baseX + mShift;
+  const blinkOn = sub % 2 === 0;               // 点滅は1コマおき
+  const pose = pose0 === "idle" && hx === 6 && f ? "walk" : pose0; // 待機中は足踏み
 
   drawBackground(battle, BW, BH, t, GROUND, f);
-  if (mShow) drawMonster(battle, mx, GROUND, t, f, mFlash);
-  else if (step === 8) { // きえる直前の けむり
+  if (mShow) drawMonster(battle, mx, GROUND, t, f, mFlash && blinkOn);
+  else if (smoke && blinkOn) { // きえる直前の けむり
     battle.fillStyle = "#ffffff";
-    for (let i = 0; i < 6; i++) battle.fillRect(mx + (i * 7) % M.w, GROUND - 4 - (i * 5) % M.h, 2, 2);
+    for (let k = 0; k < 6; k++) battle.fillRect(mx + (k * 7) % M.w, GROUND - 4 - (k * 5) % M.h, 2, 2);
   }
-  drawHero(battle, hx, GROUND - 22, { tier: t, gender: g, pose, flash: hFlash });
-  if (slash) {
+  drawHero(battle, hx, GROUND - 22, { tier: t, gender: g, pose, flash: hFlash && blinkOn });
+  if (slash && sub === 0) {
     battle.fillStyle = "#ffffff";
-    for (let i = 0; i < 12; i++) battle.fillRect(mx + 2 + i, GROUND - M.h - M.fly + i * 1.5, 2, 2);
+    for (let k = 0; k < 12; k++) battle.fillRect(mx + 2 + k, GROUND - M.h - M.fly + k * 1.5, 2, 2);
   }
   if (battleMsg.textContent !== text) battleMsg.textContent = text;
 
@@ -235,10 +241,10 @@ function tick() {
   portrait.fillStyle = ["#202020", "#183050", "#4070c0", "#202838", "#300808", "#2a1060"][t];
   portrait.fillRect(0, 0, 32, 32);
   portrait.setTransform(2, 0, 0, 2, 0, 0);
-  drawHero(portrait, 0, 4, { tier: t, gender: g, pose: "idle", blink: step === 4 });
+  drawHero(portrait, 0, 4, { tier: t, gender: g, pose: "idle", blink: step % 6 === 5 });
   portrait.setTransform(1, 0, 0, 1, 0, 0);
 
-  step = (step + 1) % 10;
+  step = (step + 1) % 600;
 }
 
 // ---------- せってい ----------

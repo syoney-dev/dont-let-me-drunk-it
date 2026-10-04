@@ -63,6 +63,7 @@ function loadForm(key) {
   document.getElementById("dateLabel").textContent =
     key === today ? "きょう の きろく" : `${labelOf(key)} の きろく`;
   renderForm();
+  renderCal();
 }
 function renderForm() {
   cmdEls.forEach((b) => b.setAttribute("aria-checked", String(b.dataset.status === pickedStatus)));
@@ -111,7 +112,44 @@ function renderAll() {
     ? `つぎの そうびまで あと ${next.min - days}にち`
     : "さいきょうの そうびに たどりついた！";
   renderLog();
+  renderCal();
 }
+
+// ---------- カレンダー ----------
+const COIN = iconURL(drawCoin);
+const FOE = iconURL((c) => drawMonster(c, 0, 16, 0, 0, false));
+let calMonth = new Date(); calMonth.setDate(1);
+
+function renderCal() {
+  const y = calMonth.getFullYear(), m = calMonth.getMonth();
+  document.getElementById("calTitle").textContent = `${y}ねん ${m + 1}がつ`;
+  const today = dateKey(new Date());
+  const box = document.getElementById("cal");
+  box.textContent = "";
+  for (let i = 0; i < new Date(y, m, 1).getDay(); i++) box.append(document.createElement("span"));
+  const last = new Date(y, m + 1, 0).getDate();
+  for (let d = 1; d <= last; d++) {
+    const key = dateKey(new Date(y, m, d));
+    const r = state.records[key];
+    const b = document.createElement("button");
+    b.textContent = d;
+    if (key === today) b.classList.add("today");
+    if (key === editingKey) b.classList.add("sel");
+    if (key > today) b.disabled = true;
+    if (r) {
+      const img = document.createElement("img");
+      img.src = r.status === "sober" ? COIN : FOE;
+      img.alt = r.status === "sober" ? "のまなかった" : "のんでしまった";
+      b.append(img);
+    }
+    b.addEventListener("click", () => loadForm(key));
+    box.append(b);
+  }
+  const now = new Date();
+  document.getElementById("calNext").disabled = y > now.getFullYear() || (y === now.getFullYear() && m >= now.getMonth());
+}
+document.getElementById("calPrev").addEventListener("click", () => { calMonth.setMonth(calMonth.getMonth() - 1); renderCal(); });
+document.getElementById("calNext").addEventListener("click", () => { calMonth.setMonth(calMonth.getMonth() + 1); renderCal(); });
 
 function renderLog() {
   const ul = document.getElementById("log");
@@ -144,7 +182,7 @@ function renderLog() {
   }
 }
 
-// ---------- アニメーション（2fps） ----------
+// ---------- アニメーション（1fps） ----------
 const battle = document.getElementById("battle").getContext("2d");
 const portrait = document.getElementById("portrait").getContext("2d");
 const battleMsg = document.getElementById("battleMsg");
@@ -237,6 +275,6 @@ say(state.records[dateKey(new Date())]
   ? `${state.settings.name}よ、きょうも よく がんばった。`
   : `${state.settings.name}よ、きょうは のまずに すごせたか？`);
 tick();
-setInterval(tick, 500);
+setInterval(tick, 1000);
 
 if ("serviceWorker" in navigator) navigator.serviceWorker.register("sw.js").catch(() => {});

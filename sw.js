@@ -1,4 +1,4 @@
-const CACHE_NAME = "dlmdi-cache-v1";
+const CACHE_NAME = "dlmdi-cache-v2";
 const ASSETS = ["./", "./index.html", "./style.css", "./sprites.js", "./app.js", "./manifest.json", "./icon.svg"];
 
 self.addEventListener("install", (event) => {

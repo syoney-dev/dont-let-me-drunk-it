@@ -3,8 +3,8 @@
 const TIERS = [
   { min: 0,   rank: "みならい", weapon: "ひのきのぼう",   armor: "ぬののふく",
     armorC: "#a89070", armorHi: "#c8b090", sleeve: "#a89070", pants: "#605040", boots: "#403020", belt: "#504030",
-    blade: "#8b5a2b", hilt: "#8b5a2b", len: 0, monster: "ビアスライム",
-    lure: "つめたい ビールを さしだした！" },
+    blade: "#8b5a2b", hilt: "#8b5a2b", len: 0, monster: "のろいのジョッキ",
+    lure: "「かんぱい しようぜ…」と せまってきた！" },
   { min: 3,   rank: "たびびと", weapon: "どうのつるぎ",   armor: "かわのよろい",
     armorC: "#8b5a2b", armorHi: "#b07840", sleeve: "#704020", pants: "#504038", boots: "#302018", belt: "#c09030",
     blade: "#d08840", hilt: "#704020", len: 7, monster: "チューハイバット",
@@ -109,15 +109,19 @@ function drawHero(ctx, ox, oy, o) {
 // ---------- モンスター（左向き） ----------
 // 戻り値は {w,h}。(x,y) は左上
 const MONSTERS = [
-  { w: 14, h: 12, fly: 0, draw(P, f) {           // ビアスライム
-    const b = f ? 1 : 0;
-    P(2, 4 + b, 10, 8 - b, "#f8b800");
-    P(3, 3 + b, 8, 1, "#f8b800");
-    P(1, 6 + b, 12, 6 - b, "#f8b800");
-    P(2, 1 + b, 10, 3, "#ffffff"); P(3, 0 + b, 8, 1, "#ffffff"); P(1, 3 + b, 3, 2, "#ffffff");
-    P(3, 6 + b, 2, 2, "#000"); P(7, 6 + b, 2, 2, "#000");
-    P(4, 9 + b, 4, 1, "#a04000");
-    P(10, 7 + b, 1, 1, "#fff8a0"); P(11, 9, 1, 1, "#fff8a0");
+  { w: 16, h: 16, fly: 0, draw(P, f) {           // のろいのジョッキ
+    const g = "#d89000", d = "#a05800", k = "#300800", foam = "#f0f0e0";
+    P(1, 3, 12, 13, g); P(1, 3, 1, 13, d); P(12, 3, 1, 13, d); P(1, 15, 12, 1, d);
+    P(13, 5, 3, 1, d); P(15, 5, 1, 7, d); P(13, 11, 3, 1, d);       // とって
+    P(0, 0, 14, 3, foam); P(1, -1, 5, 1, foam); P(8, -1, 4, 1, foam);
+    P(2, 3, 1, f ? 4 : 2, foam); P(6, 3, 1, f ? 2 : 4, foam); P(10, 3, 1, 3, foam); // たれる あわ
+    P(2, 5, 4, 1, k); P(8, 5, 4, 1, k);                               // つりあがった まゆ
+    P(3, 6, 3, 2, "#ff2020"); P(8, 6, 3, 2, "#ff2020");
+    P(4, 6, 1, 1, k); P(9, 6, 1, 1, k);
+    P(3, 9, 8, f ? 5 : 4, k);                                         // くち
+    P(3, 9, 1, 2, "#fff"); P(5, 9, 1, 1, "#fff"); P(7, 9, 1, 1, "#fff"); P(9, 9, 2, 2, "#fff");
+    P(4, f ? 13 : 12, 1, 1, "#fff"); P(8, f ? 13 : 12, 1, 1, "#fff");
+    P(11, 12, 1, 1, "#f8e080"); P(2, 14, 1, 1, "#f8e080");
   } },
   { w: 22, h: 12, fly: 18, draw(P, f) {          // チューハイバット
     const c = "#9040c0";
@@ -214,4 +218,21 @@ function drawBackground(ctx, w, h, tier, ground, frame) {
     stars.forEach(([x, y], i) => fill(x, y, 1, 1, (i + frame) % 2 ? "#ffffff" : "#8060c0"));
     fill(80, 4, 8, 8, "#f0e8a0"); fill(82, 4, 6, 6, "#100020");
   }
+}
+
+// ---------- カレンダー用アイコン ----------
+function drawCoin(ctx) {
+  const P = painter(ctx, 0, 0, false);
+  const o = "#a06800", g = "#f8d830";
+  P(4, 1, 8, 1, o); P(2, 2, 12, 12, o); P(4, 14, 8, 1, o); P(3, 3, 10, 10, o);
+  P(4, 2, 8, 12, g); P(3, 4, 10, 8, g);
+  P(5, 4, 6, 8, "#e0b020"); P(6, 5, 4, 6, g);
+  P(7, 6, 2, 4, o);
+  P(4, 4, 1, 3, "#fff8b0"); P(5, 3, 2, 1, "#fff8b0");
+}
+function iconURL(draw) {
+  const c = document.createElement("canvas");
+  c.width = c.height = 16;
+  draw(c.getContext("2d"));
+  return c.toDataURL();
 }
